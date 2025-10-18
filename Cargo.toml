@@ -1,0 +1,18 @@
+[package]
+name = "dioxus-test-utils"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+cssparser = "0.35.0"
+dioxus-core = "=0.7.0-rc.2"
+dioxus-hooks = "=0.7.0-rc.2"
+dioxus-html = "=0.7.0-rc.2"
+dioxus-signals = "=0.7.0-rc.2"
+futures = "0.3.31"
+html-escape = "0.2.13"
+kernal = "0.4.0"
+precomputed-hash = "0.1.1"
+selectors = "0.32.0"
+slab = "0.4.11"
+string_cache = "0.9.0"
