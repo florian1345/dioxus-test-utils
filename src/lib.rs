@@ -674,10 +674,24 @@ impl TestDom {
         TestDom::new_with_virtual_dom(VirtualDom::new_with_props(root, root_props))
     }
 
+    pub fn new_with_context<C: ProvideRootContext>(
+        root: fn() -> Element,
+        root_context: RootContext<C>,
+    ) -> TestDom {
+        TestDom::new_with_virtual_dom(root_context.provide(VirtualDom::new(root)))
+    }
+
     fn update(&mut self) {
         while self.virtual_dom.wait_for_work().now_or_never().is_some() {
             self.virtual_dom.render_immediate(&mut self.writer);
         }
+    }
+
+    /// Executes one piece of pending async work and updates the DOM.
+    pub async fn flush_async_work(&mut self) {
+        // TODO can we do all pending work at once?
+        self.virtual_dom.wait_for_work().await;
+        self.virtual_dom.render_immediate(&mut self.writer);
     }
 
     pub fn raise(&mut self, event: TestEvent<impl EventType>) {
@@ -699,6 +713,59 @@ impl TestDom {
             id: self.writer.root_node_id,
             nodes: &self.writer.nodes,
         }
+    }
+}
+
+pub trait ProvideRootContext {
+    fn provide(self, virtual_dom: VirtualDom) -> VirtualDom;
+}
+
+impl ProvideRootContext for () {
+    fn provide(self, virtual_dom: VirtualDom) -> VirtualDom {
+        virtual_dom
+    }
+}
+
+impl<T1: ProvideRootContext, T2: ProvideRootContext> ProvideRootContext for (T1, T2) {
+    fn provide(self, virtual_dom: VirtualDom) -> VirtualDom {
+        self.1.provide(self.0.provide(virtual_dom))
+    }
+}
+
+pub struct SingleRootContext<T> {
+    context: T,
+}
+
+impl<T: Clone + 'static> ProvideRootContext for SingleRootContext<T> {
+    fn provide(self, virtual_dom: VirtualDom) -> VirtualDom {
+        virtual_dom.with_root_context(self.context)
+    }
+}
+
+pub struct RootContext<T> {
+    provide_root_context: T,
+}
+
+impl Default for RootContext<()> {
+    fn default() -> RootContext<()> {
+        RootContext {
+            provide_root_context: (),
+        }
+    }
+}
+
+impl<T: ProvideRootContext> RootContext<T> {
+    pub fn with_root_context<NewT: Clone + 'static>(
+        self,
+        context: NewT,
+    ) -> RootContext<(SingleRootContext<NewT>, T)> {
+        RootContext {
+            provide_root_context: (SingleRootContext { context }, self.provide_root_context),
+        }
+    }
+
+    fn provide(self, virtual_dom: VirtualDom) -> VirtualDom {
+        self.provide_root_context.provide(virtual_dom)
     }
 }
 
