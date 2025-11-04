@@ -681,6 +681,18 @@ impl TestDom {
         TestDom::new_with_virtual_dom(root_context.provide(VirtualDom::new(root)))
     }
 
+    pub fn new_with_props_and_context<P: Clone + 'static, M: 'static, C: ProvideRootContext>(
+        root: impl ComponentFunction<P, M>,
+        root_props: P,
+        root_context: RootContext<C>,
+    ) -> TestDom {
+        TestDom::new_with_virtual_dom(
+            root_context.provide(
+                VirtualDom::new_with_props(root, root_props)
+            )
+        )
+    }
+
     fn update(&mut self) {
         while self.virtual_dom.wait_for_work().now_or_never().is_some() {
             self.virtual_dom.render_immediate(&mut self.writer);
