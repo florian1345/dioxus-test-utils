@@ -2,6 +2,7 @@ mod focus;
 mod form;
 mod mouse;
 mod animation;
+mod resize;
 
 use dioxus_core::EventHandler;
 use dioxus_html::{AnimationData, CancelData, ClipboardData, CompositionData, DragData, FocusData, FormData, HtmlEventConverter, ImageData, KeyboardData, MediaData, MountedData, MouseData, PlatformEventData, PointerData, ResizeData, ScrollData, SelectionData, ToggleData, TouchData, TransitionData, VisibleData, WheelData};
@@ -12,6 +13,12 @@ pub use crate::event::animation::{AnimationEventType, TestAnimationData};
 pub use crate::event::focus::{FocusEventType, TestFocusData};
 pub use crate::event::form::{FormEventType, TestFormData};
 pub use crate::event::mouse::{MouseEventType, TestMouseData};
+pub use crate::event::resize::{
+    ResizeEventType,
+    TestResizeData,
+    TestResizeError,
+    TestResizeOperationFailedError,
+};
 
 use crate::{NodeId, NodeRef, TestDom};
 
@@ -117,8 +124,8 @@ impl HtmlEventConverter for TestHtmlEventConverter {
         todo!()
     }
 
-    fn convert_resize_data(&self, _: &PlatformEventData) -> ResizeData {
-        todo!()
+    fn convert_resize_data(&self, event: &PlatformEventData) -> ResizeData {
+        convert::<TestResizeData, _>(event)
     }
 
     fn convert_scroll_data(&self, _: &PlatformEventData) -> ScrollData {
