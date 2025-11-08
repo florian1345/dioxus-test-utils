@@ -8,8 +8,9 @@ use std::collections::HashMap;
 use std::fmt;
 use std::fmt::{Debug, Formatter, Write};
 use std::ops::{Index, IndexMut};
+use std::pin::pin;
 use std::rc::Rc;
-
+use std::task::Poll;
 use dioxus_core::{
     AttributeValue,
     ComponentFunction,
@@ -24,7 +25,8 @@ use dioxus_core::{
     WriteMutations,
 };
 use dioxus_html::PlatformEventData;
-use futures::FutureExt;
+use futures::{future, FutureExt};
+use futures::future::Either;
 use kernal::prelude::*;
 use kernal::{AssertThat, AssertThatData};
 use slab::Slab;
@@ -697,6 +699,34 @@ impl TestDom {
         while self.virtual_dom.wait_for_work().now_or_never().is_some() {
             self.virtual_dom.render_immediate(&mut self.writer);
         }
+    }
+
+    pub async fn flush_async_work_while(&mut self, mut condition: impl FnMut() -> bool) {
+        let work = pin! { self.virtual_dom.wait_for_work() };
+        let result = future::select(
+            work,
+            future::poll_fn(|_|
+                if condition() {
+                    Poll::Pending
+                }
+                else {
+                    Poll::Ready(())
+                }
+            )
+        ).await;
+
+        if let Either::Left(_) = result {
+            if condition() {
+                panic!(
+                    "async work resulted in dirty scopes without fulfilling abort condition\n\
+                        use `flush_async_work` if that is expected"
+                );
+            }
+        }
+    }
+
+    pub async fn flush_async_work_until(&mut self, mut condition: impl FnMut() -> bool) {
+        self.flush_async_work_while(|| !condition()).await;
     }
 
     /// Executes one piece of pending async work and updates the DOM.
