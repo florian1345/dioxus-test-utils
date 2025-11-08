@@ -54,6 +54,7 @@ impl HasFormData for TestFormData {
     }
 }
 
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum FormEventType {
     Change,
     Input,

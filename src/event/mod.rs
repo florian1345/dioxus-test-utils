@@ -1,15 +1,18 @@
 mod focus;
 mod form;
 mod mouse;
+mod animation;
 
 use dioxus_core::EventHandler;
 use dioxus_html::{AnimationData, CancelData, ClipboardData, CompositionData, DragData, FocusData, FormData, HtmlEventConverter, ImageData, KeyboardData, MediaData, MountedData, MouseData, PlatformEventData, PointerData, ResizeData, ScrollData, SelectionData, ToggleData, TouchData, TransitionData, VisibleData, WheelData};
 use futures::channel::mpsc;
 use futures::channel::mpsc::{UnboundedReceiver, UnboundedSender};
 
+pub use crate::event::animation::{AnimationEventType, TestAnimationData};
 pub use crate::event::focus::{FocusEventType, TestFocusData};
 pub use crate::event::form::{FormEventType, TestFormData};
 pub use crate::event::mouse::{MouseEventType, TestMouseData};
+
 use crate::{NodeId, NodeRef, TestDom};
 
 pub trait EventType: Sized {
@@ -62,8 +65,8 @@ where
 pub(crate) struct TestHtmlEventConverter;
 
 impl HtmlEventConverter for TestHtmlEventConverter {
-    fn convert_animation_data(&self, _: &PlatformEventData) -> AnimationData {
-        todo!()
+    fn convert_animation_data(&self, event: &PlatformEventData) -> AnimationData {
+        convert::<TestAnimationData, _>(event)
     }
 
     fn convert_cancel_data(&self, _: &PlatformEventData) -> CancelData {

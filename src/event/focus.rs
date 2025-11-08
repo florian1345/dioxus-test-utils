@@ -13,6 +13,7 @@ impl HasFocusData for TestFocusData {
     }
 }
 
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum FocusEventType {
     Focus,
     FocusOut,
