@@ -34,8 +34,8 @@ impl From<TestResizeError> for ResizeError {
 
 #[derive(Clone)]
 pub struct TestResizeData {
-    border_box_size: Result<PixelsSize, TestResizeError>,
-    content_box_size: Result<PixelsSize, TestResizeError>,
+    pub border_box_size: Result<PixelsSize, TestResizeError>,
+    pub content_box_size: Result<PixelsSize, TestResizeError>,
 }
 
 impl Default for TestResizeData {
