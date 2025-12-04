@@ -3,6 +3,7 @@ mod form;
 mod mouse;
 mod animation;
 mod resize;
+mod wheel;
 
 use dioxus_core::EventHandler;
 use dioxus_html::{AnimationData, CancelData, ClipboardData, CompositionData, DragData, FocusData, FormData, HtmlEventConverter, ImageData, KeyboardData, MediaData, MountedData, MouseData, PlatformEventData, PointerData, ResizeData, ScrollData, SelectionData, ToggleData, TouchData, TransitionData, VisibleData, WheelData};
@@ -19,6 +20,7 @@ pub use crate::event::resize::{
     TestResizeError,
     TestResizeOperationFailedError,
 };
+pub use crate::event::wheel::{WheelEventType, TestWheelData};
 
 use crate::{NodeId, NodeRef, TestDom};
 
@@ -152,8 +154,8 @@ impl HtmlEventConverter for TestHtmlEventConverter {
         todo!()
     }
 
-    fn convert_wheel_data(&self, _: &PlatformEventData) -> WheelData {
-        todo!()
+    fn convert_wheel_data(&self, event: &PlatformEventData) -> WheelData {
+        convert::<TestWheelData, _>(event)
     }
 }
 
