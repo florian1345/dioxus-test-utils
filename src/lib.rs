@@ -327,10 +327,12 @@ impl Nodes {
 
     fn assign(&mut self, node_id: NodeId, element_id: ElementId) {
         let replaced_element = self.node_to_element_ids.insert(node_id, element_id);
-        let replaced_node = self.element_to_node_ids.insert(element_id, node_id);
+
+        // TODO does this leak memory if a node was already assigned to the element_id? (happens in
+        //  some calls to load_template)
+        self.element_to_node_ids.insert(element_id, node_id);
 
         assert!(replaced_element.is_none());
-        assert!(replaced_node.is_none());
     }
 
     fn remove(&mut self, id: NodeId) {
